@@ -10,7 +10,7 @@ summary(Loan)
 
 summary_by_country = Loan %>%
   group_by(country)%>%
-  summarise(no_loan = n())
+  summarise(no_loan = n(), LoanAmount = sum(loan_amount))
 
 summary_by_country = summary_by_country%>%
   arrange(no_loan)

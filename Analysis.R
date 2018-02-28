@@ -24,13 +24,15 @@ ggplot(aes(x = no_loan, y = LoanAmount, col = country))+
   theme_classic()
 
 summary_by_country%>%
-  filter(no_loan <= 2313 && no_loan > 363)%>%
+  filter(no_loan <= 2313)%>%
+  filter(no_loan > 363)%>%
   ggplot(aes(x = no_loan, y = LoanAmount, col = country))+
   geom_point()+
   theme_classic()
 
 summary_by_country%>%
-  filter(no_loan <= 6687 && no_loan > 2313)%>%
+  filter(no_loan <= 6687)%>%
+  filter(no_loan > 2313)%>%
   ggplot(aes(x = no_loan, y = LoanAmount, col = country))+
   geom_point()+
   theme_classic()

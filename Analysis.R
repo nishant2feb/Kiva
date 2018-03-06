@@ -46,12 +46,26 @@ summary_by_country%>%
 ## Analysing data of text like sector activity and use
 library(qdap)
 library(tm)
+library(wordcloud)
 
-activity_text = (Loan$activity)
+# Creating clean corpus
+activity_text = VectorSource(Loan$activity)
+
+activity_text = VCorpus(activity_text)
+
 tm_map(activity_text, removeNumbers)
 tm_map(activity_text, removePunctuation)
 
-activity_wfm = wfm(Loan$activity)
+activity_text_tdm = TermDocumentMatrix(activity_text)
 
+activity_text_matrix = as.matrix(activity_text_tdm)
+
+freq = rowSums(activity_text_matrix)
+
+#Word fequency for plotting data
+
+word_freq = data.frame(term = names(freq), num = freq)
+
+wordcloud(word_freq$term, word_freq$num, colors = 'red')
 
 

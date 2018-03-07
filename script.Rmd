@@ -1,0 +1,416 @@
+---
+title: "Kiva Loans EDA part 1 | Interactive Visualizations"
+author: "Pranav Pandya"
+date: '3rd March 2018'
+output:
+  html_document:
+    number_sections: false
+    toc: true
+    toc_depth: 6
+    highlight: tango
+    theme: cosmo
+    smart: true
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+
+## Introduction 
+
+This is part one of exploratory data analysis for Kiva loans dataset. This part focuses on visualizations to quickly summarize loan data by geographic locations. Second part will cover statistical analysis and modeling. 
+
+### **What's new in this kernel?**
+
+- Interactive visualizations
+- Use of country flag icons for data points (localized borrower situations)
+- Data points mapped with 
+
+    - Multidimensional Poverty Index (MPI) (regional, urban and rural)
+    - Intensity of Deprivation (urban and rural)
+    - Human development index (2014)
+- Data filtered by relevant and labeled themes (i.e. extreme poverty, vulnerable population etc.)
+- Possible outlier/ unsual loan amount detection with hover over info box for quick investigation
+- Customized plotter function that can be used to analyse data with different configurations.
+
+### Sample size
+Please note that the data has been filtered for the year **2017** only. In all the plots, loan_amount is mapped on X axis and lender_count is mapped on Y axis. Thought process behind this is to convey the insights from chosen visualization technique. 
+
+Following features are mapped with data points and can be viewed on hover:
+
+- **id**:                  Unique ID for loan|
+- **hdi_2014**:				Human Development Index HDI-2014
+- **mpi_regional**:			Multi-dimensional poverty index by region
+- **mpi_urban**:				MPI for urban areas within the country
+- **mpi_rural**:				MPI for rural areas within the country
+- **depr_intensity_urban**:	Average distance below the poverty line of those listed as poor in urban areas
+- **depr_intensity_rural**:	Average distance below the poverty line of those listed as poor in rural areas|
+- **theme**:					General description of the loan theme category
+- **sector**:				Sector in which a loan is placed on Kiva's main page
+- **date**:					date on which loan was posted
+- **term_in_months**:		number of months over which loan was scheduled to be paid back
+- **repayment_interval**:	frequency at which lenders are scheduled to receive installments
+
+Data is split by continents instead of world_regions. Kosovo and Virgin Islands are exceptions (disputed territory)
+
+### Load, clean and select appropriate data {.tabset .tabset-fade .tabset-pills} 
+
+#### Piping with dplyr
+```{r message=FALSE, warning=FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, dplyr, data.table, DT, lubridate, rvest, knitr,
+               janitor, stringr, jsonlite, countrycode, purrrlyr, highcharter)
+
+options(highcharter.debug = TRUE)
+
+loans <- fread('kiva_loans.csv') %>%
+  select(-c(funded_amount, activity, currency, partner_id, 
+            posted_time, borrower_genders, disbursed_time, funded_time, tags)) 
+
+regions <- fread("kiva_mpi_region_locations.csv") %>% 
+  select(LocationName, country, region, MPI) %>%
+  rename("mpi_regional" = "MPI")
+
+themes <- fread("loan_theme_ids.csv") %>% 
+  select(-c(`Loan Theme ID`, `Partner ID`)) %>%
+  rename("theme" = `Loan Theme Type`)
+
+#External data for MPI urban and rural
+mpi_national = fread('MPI_national.csv') %>% 
+  select(c(ISO, `MPI Urban`, `MPI Rural`, 
+           `Intensity of Deprivation Urban`, `Intensity of Deprivation Rural`)) %>%
+  rename("mpi_urban" = `MPI Urban`, 
+         "mpi_rural" = `MPI Rural`, 
+         "depr_intensity_urban" = `Intensity of Deprivation Urban`, 
+         "depr_intensity_rural" =`Intensity of Deprivation Rural`)
+         
+# mpi_subnational = read_csv('../input/mpi/MPI_subnational.csv')
+
+#World indexes (hdi 2014)
+wi <- fread("Kaggle.csv") %>%
+  rename("country" = "Id", "hdi_2014" = "Human Development Index HDI-2014") %>%
+  select(country, hdi_2014) %>%
+  mutate(ISO = countrycode(country, 'country.name', 'iso3c')) %>%
+  select(ISO, hdi_2014)
+  
+
+#Country flags
+get_country_flags <- "url(https://raw.githubusercontent.com/tugmaks/flags/2d15d1870266cf5baefb912378ecfba418826a79/flags/flags-iso/flat/24/%s.png)"
+
+#dropping world_region because of country name mismatches. 
+#Adding continent name by country as a replacement for world_region
+
+tmp <- loans %>% 
+  mutate(year = format(as.Date(date), "%Y"),
+         continent = as.character(countrycode(sourcevar = country, 
+                                              origin = "country.name", 
+                                              destination = "continent")),
+         continent = ifelse(is.na(continent), "Na - Disputed countries", continent),
+         ISO = countrycode(country, 'country.name', 'iso3c'),
+         marker = sprintf(get_country_flags, country_code),
+         marker = map(marker, function(x) list(symbol = x)),
+         flagicon = sprintf(get_country_flags, country_code),
+         flagicon = str_replace_all(flagicon, "url\\(|\\)", "")) %>%
+  left_join(themes, by= "id") %>% #Add loan theme type
+  left_join(regions, by= c("region", "country")) %>% #add subnational MPI (mpi_regional)
+  left_join(mpi_national, by= "ISO") %>% #add urban and rural mpi + deprivation index
+  left_join(wi, by="ISO") #add human development index for the year 2014
+
+tmp %>% head(5) %>% datatable(style="bootstrap", class="table-condensed", extensions = 'Responsive',
+                 options = list(dom = 'tp',scrollX = TRUE, pageLength = 5)) 
+# cat("dimension : ", dim(tmp))
+# cat("NA count in continent columns :", sum(is.na(tmp$continent)))
+# cat("Name of continents :", unique(tmp$continent))
+#With no nas in continent column, we can split the data by each continent in order to visualize it.
+```
+ 
+#### Custom plotter function 
+This function can be configured to analyze data with different criteria. Following are the main three criteria for input data + whether or not to filter data by selected themes.
+
+- `year_to_use` 
+- `selected_continent` 
+- `loan_amount` 
+
+```{r message=FALSE, warning=FALSE}
+year_to_use = 2017
+
+#vars to use in hover info
+vars <- c("id", 
+          "hdi_2014", "mpi_regional", "mpi_urban", "mpi_rural", 
+          "depr_intensity_urban", "depr_intensity_rural", 
+          "theme", "sector", "date", "term_in_months", "repayment_interval")
+
+#hover tooltip configs for country flags
+tt <- tooltip_table(vars, sprintf("{point.%s}", vars), 
+                    img = tags$img(src="{point.flagicon}", style = "text-align: left;"))
+
+#plotter function to reuse for different continents
+fun_plotter <- function (data, name_of_continent, selected_year, selected_loan_amount) {
+  hchart(data, "scatter", 
+       hcaes(loan_amount, lender_count, name = ifelse(is.na(LocationName), country, LocationName), 
+             group = theme)) %>% 
+    hc_colors(hex_to_rgba("#d1d9fc", 0.7)) %>%
+    hc_xAxis(
+      title = list(text = "Total loan amount in US dollars", style = list(color = "black")),
+      gridLineWidth = 0,
+      labels = list(style = list(color = "grey90"))) %>% 
+    hc_yAxis(
+      lineWidth = 1, tickWidth = 1, tickLength = 10, gridLineWidth = 0, 
+      title = list(text = "Lender counts", style = list(color = "black")),
+      labels = list(style = list(color = "grey90"))) %>% 
+    hc_tooltip(
+      headerFormat = as.character(tags$h4("{point.key}", tags$br())),
+      pointFormat = tt,
+      useHTML = TRUE,
+      #backgroundColor = hex_to_rgba("dodgerblue4", 0.7),
+      backgroundColor = "transparent",
+      borderColor = "transparent",
+      shadow = FALSE,
+      style = list(color = "white", fontSize = "0.6em", fontWeight = "normal"),
+      positioner = JS("function () { return { x: this.chart.plotLeft + 10, y: this.chart.plotTop + 0 }; }"),
+      shape = "square") %>% 
+    hc_plotOptions(series = list(states = list(hover = list(halo = list(size  = 20))))) %>%
+    hc_add_theme(hc_theme_ffx()) %>%
+    hc_size(height = 600) %>%
+    hc_title(
+      text = paste("Loan amount overview by", name_of_continent, 
+                   " | Year: ", selected_year, 
+                   " | loan amount: ", selected_loan_amount) , 
+      align = "left", 
+      style = list(color = "grey90")) %>% 
+    hc_credits(
+      enabled = TRUE,
+      text = "Data source: Data Science for Good: Kiva Crowdfunding hosted on Kaggle",
+      href = "https://www.kaggle.com/kiva/data-science-for-good-kiva-crowdfunding")
+  
+}
+```
+
+
+#### Filter themes
+```{r}
+# tmp %>% group_by(theme) %>% summarize(count = n()) %>% arrange(desc(count)) %>% kable()
+pov_themes <- c("Underserved", "Rural Inclusion", "Vulnerable Populations", "Vulnerable Women", 
+                "Disaster Recovery", "Extreme Poverty", "Displaced Populations",  "Single mothers", 
+                "Conflict Zone",  "At-Risk Youth", "Underserved (Women)", "Conflict Zone (Gaza)",  
+                "Rural Conflict Zone", "Underserved (non-Lebanese)",  "Vulnerable Populations (Syrian)",  
+                "Vulnerable Populations (Palestinian)", "Single mothers entrepreneurs",  
+                "Conflict Zone (Gaza Businesses)",  "Vulnerable Populations (Refugees)", 
+                "Displaced Populations2", "Vulnerable Populations (Refugees)2",  
+                "Vulnerable Populations (Syrian)2", "Vulnerable Populations2",   
+                "Vulnerable Populations (Syrian)3",  "Vulnerable Populations (Refugees)3", 
+                "WLIFT-Conflict Zone", "Conflict Zone (Women)", "Clients below the poverty line", 
+                "Underserved (large)", "Vulnerable Populations (Physical Disabilities)", 
+                "Vulnerable Populations (Iraqi)")
+
+tmp %>% 
+  filter(theme %in% pov_themes) %>%
+  group_by(theme) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count)) %>% 
+  hchart("pie", innerSize= '40%', showInLegend= F,
+        hcaes(x = theme, y = count)) %>%
+  hc_add_theme(hc_theme_ffx()) %>% 
+  hc_title(text = "Selected loan theme categories") %>%
+  hc_credits(enabled = TRUE,
+             text = "Data source: Data Science for Good: Kiva Crowdfunding hosted on Kaggle",
+             href = "https://www.kaggle.com/kiva/data-science-for-good-kiva-crowdfunding", 
+             style = list(fontSize = "12px"))
+
+```
+
+## Visualizations 
+
+### How to get the best experience + insights from this visualizations?
+
+- Wait for the plots to load
+- Data points are overlapped, kindly click on theme labels (**below plots**) to deselect/select particular data points of interest i.e "extreme poverty"
+- Hover over data points (country flags) to view detailed summary of that loan. 
+
+### **EDA by world continents** | Filtered by year 2017 and relevant themes
+
+#### **Americas** {.tabset .tabset-fade .tabset-pills}
+##### loan_amount less than 500
+```{r message=FALSE, warning=FALSE}
+selected_continent = "Americas"
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount <= 500,
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "<= 500")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+##### loan_amount above 500
+```{r message=FALSE, warning=FALSE}
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount > 500,
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "above 500")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+#### **Africa** {.tabset .tabset-fade .tabset-pills}
+##### loan_amount less than 500
+```{r message=FALSE, warning=FALSE}
+selected_continent = "Africa"
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount <= 500,
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "<= 500")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+##### loan_amount above 500
+```{r message=FALSE, warning=FALSE}
+selected_continent = "Africa"
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount > 500,
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "above 500")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+#### **Europe, Oceania and countries with no continents** {.tabset .tabset-fade .tabset-pills}
+##### Europe 
+```{r message=FALSE, warning=FALSE}
+selected_continent = "Europe"
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount > 0, 
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "All")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+##### Oceania
+```{r message=FALSE, warning=FALSE}
+selected_continent = "Oceania"
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount > 0, 
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "All")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+##### Disputed contries | No filter on theme
+```{r message=FALSE, warning=FALSE}
+selected_continent = "Na - Disputed countries"
+data = tmp %>% filter(year == year_to_use, continent == selected_continent, loan_amount >0)
+fun_plotter2 <- function (data, name_of_continent, selected_year, selected_loan_amount) {
+  hchart(data, "scatter", 
+       hcaes(loan_amount, lender_count, size = loan_amount,
+             name = ifelse(is.na(LocationName), country, LocationName), group = theme)) %>% 
+    # hc_colors(hex_to_rgba("dodgerblue4", 0.7)) %>%
+    hc_xAxis(
+      title = list(text = "Total loan amount in US dollars", style = list(color = "black")),
+      gridLineWidth = 0,
+      labels = list(style = list(color = "grey90"))) %>% 
+    hc_yAxis(
+      lineWidth = 1, tickWidth = 1, tickLength = 10, gridLineWidth = 0, 
+      title = list(text = "Lender counts", style = list(color = "black")),
+      labels = list(style = list(color = "grey90"))) %>% 
+    hc_tooltip(
+      headerFormat = as.character(tags$h4("{point.key}", tags$br())),
+      pointFormat = tt,
+      useHTML = TRUE,
+      backgroundColor = hex_to_rgba("dodgerblue4", 0.7),
+      borderColor = "transparent",
+      shadow = FALSE,
+      style = list(color = "white", fontSize = "0.8em", fontWeight = "normal"),
+      positioner = JS("function () { return { x: this.chart.plotLeft + 15, y: this.chart.plotTop + 0 }; }"),
+      shape = "square") %>% 
+    hc_plotOptions(series = list(states = list(hover = list(halo = list(size  = 30))))) %>%
+    hc_add_theme(hc_theme_ffx()) %>%
+    hc_size(height = 650, width = 1100) %>%
+    hc_title(
+      text = paste("Loan amount overview by", name_of_continent, 
+                   " | Year: ", selected_year, 
+                   " | loan amount: ", selected_loan_amount) , 
+      align = "left", 
+      style = list(color = "grey90")) %>% 
+    hc_credits(
+      enabled = TRUE,
+      text = "Data source: Data Science for Good: Kiva Crowdfunding hosted on Kaggle",
+      href = "https://www.kaggle.com/kiva/data-science-for-good-kiva-crowdfunding")
+  
+}
+fun_plotter2(data, selected_continent, year_to_use, selected_loan_amount = "All")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+
+#### **Asia** {.tabset .tabset-fade .tabset-pills}
+##### Loan Amount (LA) < 500
+```{r message=FALSE, warning=FALSE}
+selected_continent = "Asia"
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount <= 500,
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "<= 500")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+##### LA: 500-1000
+```{r message=FALSE, warning=FALSE}
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount > 500 & loan_amount <= 1000,
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "between 500-1000")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+##### LA: 1000-2000
+```{r message=FALSE, warning=FALSE}
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount > 1000 & loan_amount <= 2000,
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "between 1000-2000")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+##### LA: 2000-3000
+```{r message=FALSE, warning=FALSE}
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount > 2000 & loan_amount <= 3000,
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "between 2000-3000")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+##### LA: > 3000
+```{r message=FALSE, warning=FALSE}
+data <- tmp %>% 
+  filter(year == year_to_use, 
+         continent == selected_continent, 
+         loan_amount > 3000,
+         theme %in% pov_themes)
+fun_plotter(data, selected_continent, year_to_use, selected_loan_amount = "above 3000")
+data %>% group_by(country) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+
+## Final thoughts
+- I have decided to split ideas into different kernels and in the coming parts, I intend to come up with some more visualizations with statistical analysis and modeling.
+
+If you liked this kernel, then please do upvote and make me happy. :) 
+
+

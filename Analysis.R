@@ -68,4 +68,7 @@ word_freq = data.frame(term = names(freq), num = freq)
 
 wordcloud(word_freq$term, word_freq$num, colors = 'red')
 
+#word network
+word_associate(Loan$activity, match.string = c("farming", "sales", "food", "expenses", "personal", "store"), 
+               network.plot = T, cloud.colors = c("gray85", "red"))
 

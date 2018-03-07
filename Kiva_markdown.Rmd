@@ -2,8 +2,16 @@
 title: "KIVA"
 author: "Nishant"
 output:
-  html_document: default
-  pdf_document: default
+  html_document:
+    number_sections: false
+    toc: true
+    toc_depth: 6
+    highlight: tango
+    theme: cosmo
+    smart: true
+    code_folding: hide
+editor_options: 
+  chunk_output_type: consolet
 ---
 
 ```{r setup, include=FALSE}

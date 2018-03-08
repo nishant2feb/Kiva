@@ -1,5 +1,5 @@
 ---
-title: "KIVA"
+title: "KIVA: Explorartory data analysis"
 author: "Nishant"
 output:
   html_document:
@@ -10,8 +10,10 @@ output:
     theme: cosmo
     smart: true
     code_folding: hide
+    df_print: paged
 editor_options: 
-  chunk_output_type: consolet
+  chunk_output_type: console
+
 ---
 
 ```{r setup, include=FALSE}
@@ -28,10 +30,10 @@ library(lubridate)
 library(qdap)
 library(tm)
 
-#Loan = read.csv("kiva_loans.csv", stringsAsFactors = F)
-#location = read.csv("kiva_mpi_region_locations.csv", stringsAsFactors = F)
-#theme = read.csv("loan_theme_ids.csv", stringsAsFactors = F)
-#theme_region = read.csv("loan_themes_by_region.csv", stringsAsFactors = F)
+Loan = read.csv("kiva_loans.csv", stringsAsFactors = F)
+location = read.csv("kiva_mpi_region_locations.csv", stringsAsFactors = F)
+theme = read.csv("loan_theme_ids.csv", stringsAsFactors = F)
+theme_region = read.csv("loan_themes_by_region.csv", stringsAsFactors = F)
 
 ```
 
@@ -57,28 +59,28 @@ summary(summary_by_country)
 ```{r Correlation plot, message=FALSE, warning=FALSE}
 summary_by_country%>%
   filter(no_loan <= 363)%>%
-ggplot(aes(x = no_loan, y = LoanAmount, col = country))+
-  geom_point()+
+ggplot(aes(x = no_loan, y = LoanAmount, col = country, size = 10, alpha = 0.4))+
+  geom_point(show.legend = F)+
   theme_classic()
 
 summary_by_country%>%
   filter(no_loan <= 2313)%>%
   filter(no_loan > 363)%>%
-  ggplot(aes(x = no_loan, y = LoanAmount, col = country))+
-  geom_point()+
+  ggplot(aes(x = no_loan, y = LoanAmount, col = country, size = 10, alpha = 0.4))+
+  geom_point(show.legend = F)+
   theme_classic()
 
 summary_by_country%>%
   filter(no_loan <= 6687)%>%
   filter(no_loan > 2313)%>%
-  ggplot(aes(x = no_loan, y = LoanAmount, col = country))+
-  geom_point()+
+  ggplot(aes(x = no_loan, y = LoanAmount, col = country, size = 10, alpha = 0.4))+
+  geom_point(show.legend = F)+
   theme_classic()
 
 summary_by_country%>%
   filter(no_loan > 6687)%>%
-  ggplot(aes(x = no_loan, y = LoanAmount, col = country))+
-  geom_point()+
+  ggplot(aes(x = no_loan, y = LoanAmount, col = country, size = 10, alpha = 0.4))+
+  geom_point(show.legend = F)+
   theme_classic()
 
 
@@ -116,9 +118,53 @@ wordcloud(word_freq$term, word_freq$num, colors = 'red')
 
 ```
 
+##Analysing Philippines Loan Data
+
+When we looked into the fourth quartile the `phillippines` stand clearly as a outlier so lets take a deeper look into the data of `phillippines`.
+
+```{r, message=FALSE, warning=FALSE}
+
+Loan_PH = Loan%>%
+  filter(country_code == "PH")
+
+summary(Loan_PH$loan_amount)
+
+Loan_PH%>%
+  ggplot(aes(sector, loan_amount))+
+  scale_x_discrete("Sectors")+
+  scale_y_discrete("Loan Amount")+
+  stat_summary(fun.y = mean, geom = "bar", fill = "grey50")+
+  theme_classic()
+  
+```
+
+
+Lets deep dive into the data.
+
+```{r, message=FALSE, warning=FALSE}
+
+Loan_PH%>%
+  select(loan_amount, date, sector)%>%
+  ggplot(aes(loan_amount, date))+
+  geom_point()+
+  facet_grid(.~ sector)+
+  scale_y_discrete(breaks = NULL)+
+  scale_x_discrete(breaks = NULL)
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())
+
+```
+
+Graphically we can identify few outliers in few sectors and if compared with previous bar plot then can see the density distribution of loan amount in few sectors.
+
+Like looking at wholesale sector we can easily see that the amount is highest but the distribution is done in larger chunks.
+
+**Lets look at the data of wholesale sector.**
+
+```{r, message=FALSE, warning=FALSE}
 
 
 
+```
 
 
 

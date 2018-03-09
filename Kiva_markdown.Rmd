@@ -29,6 +29,8 @@ library(dplyr)
 library(lubridate)
 library(qdap)
 library(tm)
+library(plotly)
+library(lubridate)
 
 Loan = read.csv("kiva_loans.csv", stringsAsFactors = F)
 location = read.csv("kiva_mpi_region_locations.csv", stringsAsFactors = F)
@@ -57,31 +59,55 @@ summary(summary_by_country)
 ## Analysing data grapically with each quartiles
 
 ```{r Correlation plot, message=FALSE, warning=FALSE}
-summary_by_country%>%
+first_q =  summary_by_country%>%
   filter(no_loan <= 363)%>%
 ggplot(aes(x = no_loan, y = LoanAmount, col = country, size = 10, alpha = 0.4))+
   geom_point(show.legend = F)+
+  scale_y_discrete("Loan Amount")+
+  labs(title = "First Quartile")+
+  theme(axis.ticks.y = element_blank())+
   theme_classic()
 
-summary_by_country%>%
+first = ggplotly(first_q)
+first
+
+second_q = summary_by_country%>%
   filter(no_loan <= 2313)%>%
   filter(no_loan > 363)%>%
   ggplot(aes(x = no_loan, y = LoanAmount, col = country, size = 10, alpha = 0.4))+
   geom_point(show.legend = F)+
+  scale_y_discrete("Loan Amount")+
+  labs(title = "Second Quartile")+
+  theme(axis.ticks.y = element_blank())+
   theme_classic()
 
-summary_by_country%>%
+second = ggplotly(second_q)
+second
+
+third_q = summary_by_country%>%
   filter(no_loan <= 6687)%>%
   filter(no_loan > 2313)%>%
   ggplot(aes(x = no_loan, y = LoanAmount, col = country, size = 10, alpha = 0.4))+
   geom_point(show.legend = F)+
+  scale_y_discrete("Loan Amount")+
+  labs(title = "Third Quartile")+
+  theme(axis.ticks.y = element_blank())+
   theme_classic()
 
-summary_by_country%>%
+third = ggplotly(third_q)
+third
+
+fourth_q = summary_by_country%>%
   filter(no_loan > 6687)%>%
   ggplot(aes(x = no_loan, y = LoanAmount, col = country, size = 10, alpha = 0.4))+
   geom_point(show.legend = F)+
+  scale_y_discrete("Loan Amount")+
+  labs(title = "Fourth Quartile")+
+  theme(axis.ticks.y = element_blank())+
   theme_classic()
+
+fourth = ggplotly(fourth_q)
+fourth
 
 
 ```
@@ -118,7 +144,7 @@ wordcloud(word_freq$term, word_freq$num, colors = 'red')
 
 ```
 
-##Analysing Philippines Loan Data
+## Analysing Philippines Loan Data
 
 When we looked into the fourth quartile the `phillippines` stand clearly as a outlier so lets take a deeper look into the data of `phillippines`.
 
@@ -129,27 +155,32 @@ Loan_PH = Loan%>%
 
 summary(Loan_PH$loan_amount)
 
-Loan_PH%>%
+p =  Loan_PH%>%
   ggplot(aes(sector, loan_amount))+
-  scale_x_discrete("Sectors")+
   scale_y_discrete("Loan Amount")+
   stat_summary(fun.y = mean, geom = "bar", fill = "grey50")+
+  theme(axis.ticks = element_blank())+
   theme_classic()
+
+p = ggplotly(p)
+
+p
   
 ```
 
-
+# Sector Wise Analysis(Phillippines)
 Lets deep dive into the data.
 
 ```{r, message=FALSE, warning=FALSE}
+
 
 Loan_PH%>%
   select(loan_amount, date, sector)%>%
   ggplot(aes(loan_amount, date))+
   geom_point()+
-  facet_grid(.~ sector)+
+  facet_wrap(~ sector)+
   scale_y_discrete(breaks = NULL)+
-  scale_x_discrete(breaks = NULL)
+  scale_x_discrete(breaks = NULL)+
   theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())
 
 ```
@@ -162,6 +193,15 @@ Like looking at wholesale sector we can easily see that the amount is highest bu
 
 ```{r, message=FALSE, warning=FALSE}
 
+Loan_PH_Wholesale = filter(Loan_PH, sector == "Wholesale")%>%
+  mutate(year = year(date))%>%
+  ggplot(aes(x = loan_amount, y = year))+
+  geom_point()+
+  theme_classic()
+
+q = ggplotly(Loan_PH_Wholesale)
+
+q
 
 
 ```

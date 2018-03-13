@@ -32,7 +32,7 @@ library(tm)
 library(plotly)
 library(lubridate)
 
-Loan = read.csv("kiva_loans.csv", stringsAsFactors = F)
+Loan = read.csv("kiva_loans.csv")
 location = read.csv("kiva_mpi_region_locations.csv", stringsAsFactors = F)
 theme = read.csv("loan_theme_ids.csv", stringsAsFactors = F)
 theme_region = read.csv("loan_themes_by_region.csv", stringsAsFactors = F)
@@ -149,7 +149,7 @@ names(kaggle_country) = c('country', 'HDI')
 
 data = left_join(Loan_10_summary, kaggle_country, by = 'country')
 
- ggplot(data, aes(x = as.factor(country))) +
+  ggplot(data, aes(x = as.factor(country))) +
   geom_bar(aes( y = Loan_amount, fill = 'HDI'), stat = "identity") + 
   geom_bar(aes(y = HDI * (-1), fill = 'Loan Amount'), stat = "identity")+
   scale_y_continuous(breaks = seq(-1.5, 1.5, 0.5), 
@@ -159,6 +159,8 @@ data = left_join(Loan_10_summary, kaggle_country, by = 'country')
    ylab(" ")+
    theme(legend.title = element_blank())
 
+
+ 
 ```
 
 
@@ -168,27 +170,24 @@ data = left_join(Loan_10_summary, kaggle_country, by = 'country')
 
 
 
+```{r, message=FALSE, warning=FALSE}
+
+ 
+
+
+ggplot(Loan_10, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(borrower_genders)))+
+  facet_wrap(~ country)
 
 
 
+#library(gganimate)
+
+#gganimate(p, "first.gif")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```
 
 
 

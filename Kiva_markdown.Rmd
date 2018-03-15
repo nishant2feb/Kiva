@@ -184,24 +184,238 @@ Loan_10$gender = dt
 Loan_10 = Loan_10 %>%
   filter(gender != "")
   
-  for (i in unique(Loan_10$country)) {
+
     
-    data = subset(Loan_10, country == i)
+    data = subset(Loan_10, country == "Uganda")
     
-    p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
   geom_point(aes(col = as.factor(gender)))+
   scale_x_discrete("Loan Amount")+
   theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-      xlab(" Year-Month")
+  facet_wrap(~ country)
     
-    print(p)
+     data = subset(Loan_10, country == "Tajikistan")
     
-  }
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+    
+   data = subset(Loan_10, country == "Philippines")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+    
+   data = subset(Loan_10, country == "Peru")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+    
+   data = subset(Loan_10, country == "Pakistan")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+    
+   data = subset(Loan_10, country == "Kenya")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+    
+   data = subset(Loan_10, country == "El Salvador")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+    
+   data = subset(Loan_10, country == "Ecuador")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+    
+   data = subset(Loan_10, country == "Colombia")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+  
+     data = subset(Loan_10, country == "Cambodia")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+    
+  
+  
 
 
 ```
 
+### Uganda
 
+```{r, message=FALSE, warning=FALSE}
+
+    
+    data = subset(Loan_10, country == "Uganda")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
+
+
+### Tajikistan
+
+```{r, message=FALSE, warning=FALSE}
+
+     data = subset(Loan_10, country == "Tajikistan")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
+
+
+### Philippines
+
+```{r, message=FALSE, warning=FALSE}
+
+  data = subset(Loan_10, country == "Philippines")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
+
+
+### Peru
+
+```{r, message=FALSE, warning=FALSE}
+
+   data = subset(Loan_10, country == "Peru")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
+
+### Pakistan
+
+```{r, message=FALSE, warning=FALSE}
+
+  data = subset(Loan_10, country == "Pakistan")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
+
+### Kenya
+
+```{r, message=FALSE, warning=FALSE}
+
+  data = subset(Loan_10, country == "Kenya")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
+
+### El Salvador
+
+```{r, message=FALSE, warning=FALSE}
+
+  data = subset(Loan_10, country == "El Salvador")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
+
+### Ecuador
+
+```{r, message=FALSE, warning=FALSE}
+
+  data = subset(Loan_10, country == "Ecuador")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
+
+
+## Colombia
+
+```{r, message=FALSE, warning=FALSE}
+
+  data = subset(Loan_10, country == "Colombia")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
+
+## Cambodia
+
+```{r, message=FALSE, warning=FALSE}
+
+  data = subset(Loan_10, country == "Cambodia")
+    
+  ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+  facet_wrap(~ country)
+
+```
 
 
 ## Text Analysing

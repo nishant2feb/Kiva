@@ -173,25 +173,30 @@ data = left_join(Loan_10_summary, kaggle_country, by = 'country')
 ```{r, message=FALSE, warning=FALSE}
 
 library(stringr)
-library(rebus)
+
 
 gender = str_split(Loan_10$borrower_genders, ",")
 
-for (i in (1:435764))
-  Loan_10$gender_d[i] = gender[[i]][1]
+dt = sapply(gender, '[', 1)
 
-ggplot(Loan_10, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender_d)))+
-  scale_y_discrete("Year Month")+
-  facet_wrap(~ country)+
-  theme(axis.ticks = element_blank())
+Loan_10$gender = dt
 
-
-
-#library(gganimate)
-
-#gganimate(p, "first.gif")
-
+Loan_10 = Loan_10 %>%
+  filter(gender != "")
+  
+  for (i in unique(Loan_10$country)) {
+    
+    data = subset(Loan_10, country == i)
+    
+    p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
+  geom_point(aes(col = as.factor(gender)))+
+  scale_x_discrete("Loan Amount")+
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
+      xlab(" Year-Month")
+    
+    print(p)
+    
+  }
 
 
 ```

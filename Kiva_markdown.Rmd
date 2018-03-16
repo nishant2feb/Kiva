@@ -389,7 +389,7 @@ Loan_10 = Loan_10 %>%
 ```
 
 
-## Colombia
+### Colombia
 
 ```{r, message=FALSE, warning=FALSE}
 
@@ -403,7 +403,7 @@ Loan_10 = Loan_10 %>%
 
 ```
 
-## Cambodia
+### Cambodia
 
 ```{r, message=FALSE, warning=FALSE}
 

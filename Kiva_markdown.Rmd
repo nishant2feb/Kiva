@@ -13,7 +13,6 @@ output:
     df_print: paged
 editor_options: 
   chunk_output_type: console
-
 ---
 
 ```{r setup, include=FALSE}
@@ -31,6 +30,7 @@ library(qdap)
 library(tm)
 library(plotly)
 library(lubridate)
+library(DT)
 
 Loan = read.csv("kiva_loans.csv")
 location = read.csv("kiva_mpi_region_locations.csv", stringsAsFactors = F)
@@ -43,7 +43,9 @@ theme_region = read.csv("loan_themes_by_region.csv", stringsAsFactors = F)
 
 We will overview the loan data and create a summary by loan dataframe to better analyse the data on country basis.
 ```{r Cleaning data, echo=FALSE}
-summary(Loan)
+
+
+datatable(summary(Loan), style = "bootstrap", class = "table-condensed", options = list(dom = 'tp', scrollX = T))
 
 summary_by_country = Loan %>%
   group_by(country)%>%
@@ -205,6 +207,15 @@ Loan_10 = Loan_10 %>%
 ```
 
 
+```{r message=FALSE, warning=FALSE}
+
+plot_ly(data, x = ~loan_amount, y = ~sector)%>%
+  add_boxplot(color = ~sector)%>%
+  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))
+
+```
+
+
 ### Tajikistan
 
 ```{r, message=FALSE, warning=FALSE}
@@ -219,6 +230,13 @@ Loan_10 = Loan_10 %>%
 
   ggplotly(p)
   
+```
+
+
+```{r message=FALSE, warning=FALSE}
+plot_ly(data, x = ~loan_amount, y = ~sector)%>%
+  add_boxplot(color = ~sector)%>%
+  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))
 ```
 
 
@@ -239,6 +257,15 @@ Loan_10 = Loan_10 %>%
 ```
 
 
+```{r message=FALSE, warning=FALSE}
+
+plot_ly(data, x = ~loan_amount, y = ~sector)%>%
+  add_boxplot(color = ~sector)%>%
+  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))
+
+```
+
+
 ### Peru
 
 ```{r, message=FALSE, warning=FALSE}
@@ -253,6 +280,15 @@ Loan_10 = Loan_10 %>%
 
   ggplotly(p)
   
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+plot_ly(data, x = ~loan_amount, y = ~sector)%>%
+  add_boxplot(color = ~sector)%>%
+  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))
+
 ```
 
 ### Pakistan
@@ -407,6 +443,9 @@ p =  Loan_PH%>%
 p = ggplotly(p)
 
 p
+
+
+plot_ly(Loan_PH, x = ~date, y = ~loan_amount)
   
 ```
 
@@ -448,5 +487,13 @@ q
 
 ```
 
+
+
+```{r, message=FALSE, warning=FALSE}
+library(plotly)
+
+plot_ly(Loan_10, x = Loan_10$country, type = 'histogram')
+
+```
 
 

@@ -44,9 +44,6 @@ theme_region = read.csv("loan_themes_by_region.csv", stringsAsFactors = F)
 We will overview the loan data and create a summary by loan dataframe to better analyse the data on country basis.
 ```{r Cleaning data, echo=FALSE}
 
-
-datatable(summary(Loan), style = "bootstrap", class = "table-condensed", options = list(dom = 'tp', scrollX = T))
-
 summary_by_country = Loan %>%
   group_by(country)%>%
   summarise(no_loan = n(), LoanAmount = sum(loan_amount))
@@ -211,7 +208,8 @@ Loan_10 = Loan_10 %>%
 
 plot_ly(data, x = ~loan_amount, y = ~sector)%>%
   add_boxplot(color = ~sector)%>%
-  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))
+  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))%>%
+  rangeslider()
 
 ```
 
@@ -236,7 +234,9 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 ```{r message=FALSE, warning=FALSE}
 plot_ly(data, x = ~loan_amount, y = ~sector)%>%
   add_boxplot(color = ~sector)%>%
-  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))
+  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))%>%
+  rangeslider()
+
 ```
 
 
@@ -261,7 +261,8 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 
 plot_ly(data, x = ~loan_amount, y = ~sector)%>%
   add_boxplot(color = ~sector)%>%
-  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))
+  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))%>%
+  rangeslider()
 
 ```
 
@@ -287,7 +288,8 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 
 plot_ly(data, x = ~loan_amount, y = ~sector)%>%
   add_boxplot(color = ~sector)%>%
-  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))
+  layout(yaxis = list(title = " "), xaxis = list(title = "Loan Amount"), margin = list(l = 100))%>%
+  rangeslider()
 
 ```
 

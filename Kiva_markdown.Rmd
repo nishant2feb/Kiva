@@ -190,16 +190,11 @@ Loan_10 = Loan_10 %>%
 
 ```{r, message=FALSE, warning=FALSE}
 
-    
-    data = subset(Loan_10, country == "Uganda")
-    
- p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
+data = subset(Loan_10, country == "Uganda")
 
- ggplotly(p)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
  
 ```
 
@@ -219,14 +214,9 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 ```{r, message=FALSE, warning=FALSE}
 
      data = subset(Loan_10, country == "Tajikistan")
-    
-  p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
-
-  ggplotly(p)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
   
 ```
 
@@ -246,13 +236,9 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 
   data = subset(Loan_10, country == "Philippines")
     
-  p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
-
-  ggplotly(p)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
   
 ```
 
@@ -273,13 +259,9 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 
    data = subset(Loan_10, country == "Peru")
     
-  p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
-
-  ggplotly(p)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
   
 ```
 
@@ -299,14 +281,10 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 
   data = subset(Loan_10, country == "Pakistan")
     
-  p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
 
-  ggplotly(p)
-  
 ```
 
 ### Kenya
@@ -314,14 +292,9 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 ```{r, message=FALSE, warning=FALSE}
 
   data = subset(Loan_10, country == "Kenya")
-    
-  p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
-
-  ggplotly(p)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
   
 ```
 
@@ -331,13 +304,9 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 
   data = subset(Loan_10, country == "El Salvador")
     
-   p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
-
-   ggplotly(p)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
    
 ```
 
@@ -347,13 +316,9 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 
   data = subset(Loan_10, country == "Ecuador")
     
-  p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
-
-  ggplotly(p)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
   
 ```
 
@@ -364,13 +329,9 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 
   data = subset(Loan_10, country == "Colombia")
     
-  p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
-
-  ggplotly(p)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
   
 ```
 
@@ -380,13 +341,9 @@ plot_ly(data, x = ~loan_amount, y = ~sector)%>%
 
   data = subset(Loan_10, country == "Cambodia")
     
-  p = ggplot(data, aes(x = loan_amount, y = Year_mon, shape = repayment_interval)) +
-  geom_point(aes(col = as.factor(gender)))+
-  scale_x_discrete("Loan Amount")+
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank())+
-  facet_wrap(~ country)
-
-  ggplotly(p)
+plot_ly(data, x = ~ repayment_interval, y = ~year, color = ~gender)%>%
+  add_bars()%>%
+  layout(barmode = "stack")
   
 ```
 

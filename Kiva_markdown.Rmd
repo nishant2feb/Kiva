@@ -112,6 +112,26 @@ fourth
 ```
 
 
+## Locating locations of loan
+
+```{r message=FALSE, warning=FALSE}
+
+dat = map_data("world")
+
+dat = select(location, lat, lon)
+
+map2 = plot_geo(dat, x = ~long, y = ~lat)%>%
+  add_markers(size = I(1))%>%
+  add_segments(x = -100, xend = -50, y = 50, 75)%>%
+  layout(geo = list(projection = list(type = "mercator")))
+
+htmltools::tagList(map2)
+
+
+```
+
+
+
 
 ## Analysing Data of top Countries 
 Lets take a sample of countries with highest loan amount.
@@ -454,5 +474,22 @@ library(plotly)
 plot_ly(Loan_10, x = Loan_10$country, type = 'histogram')
 
 ```
+
+## analysing data on map
+```{r message=FALSE, warning=FALSE}
+
+theme_region_10 = filter(theme_region, country %in% Top_10_countries$country)
+
+center_lan = median(theme_region_10$lon, na.rm = T)
+center_lat = median(theme_region_10$lat, na.rm = T)
+
+leaflet(filter(theme_region_10, country == "Cambodia"))%>%
+    addTiles()%>%
+  addCircles(lng = ~(as.numeric(lon)), lat = ~(as.numeric(lat)), radius = 10, color = ~c("blue"))%>%
+  setView(lng = center_lan, lat = center_lat, zoom = 6)
+
+
+```
+
 
 

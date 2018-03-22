@@ -476,18 +476,21 @@ plot_ly(Loan_10, x = Loan_10$country, type = 'histogram')
 ```
 
 ## analysing data on map
+
+### Uganda
 ```{r message=FALSE, warning=FALSE}
 
 theme_region_10 = filter(theme_region, country %in% Top_10_countries$country)
 
-center_lan = median(theme_region_10$lon, na.rm = T)
-center_lat = median(theme_region_10$lat, na.rm = T)
+data = filter(theme_region_10, country == "Uganda")
 
-leaflet(filter(theme_region_10, country == "Cambodia"))%>%
+center_lan = median(data$lon, na.rm = T)
+center_lat = median(data$lat, na.rm = T)
+
+leaflet(data)%>%
     addTiles()%>%
   addCircles(lng = ~(as.numeric(lon)), lat = ~(as.numeric(lat)), radius = 10, color = ~c("blue"))%>%
   setView(lng = center_lan, lat = center_lat, zoom = 6)
-
 
 ```
 

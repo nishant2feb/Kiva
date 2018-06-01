@@ -1,0 +1,344 @@
+---
+title: 'EDA : Survey of Developers......'
+author: "Nishant"
+output:
+  html_document:
+    number_sections: false
+    toc: true
+    toc_depth: 6
+    highlight: tango
+    theme: cosmo
+    smart: true
+    code_folding: hide
+    df_print: paged
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+
+# Data Overview
+
+## Loading Libraries
+```{r message=FALSE, warning=FALSE}
+
+library(dplyr)
+library(ggplot2)
+library(highcharter)
+library(tidyverse)
+library(skimr)
+# library(qdap)
+# library(tm)
+# library(wordcloud)
+library(Amelia)
+library(mlbench)
+
+```
+
+
+## Loading Data
+
+```{r message=FALSE, warning=FALSE}
+
+Survey_results = read_csv("survey_results_public.csv")
+
+Total_rec = nrow(Survey_results)
+
+as.data.frame(names(Survey_results))
+
+```
+
+## Analysing Missing Values
+
+We will plot a Missigness map which will show values which are missing in the data.
+Color red will denote value presence and blue will denote the missing patches.
+
+```{r message=FALSE, warning=FALSE, fig.height=10, fig.width= 10}
+
+missmap(Survey_results, col = c("blue", "red"), legend = F)
+
+```
+
+As shown in the figure we can easily see there a lot of missing data only few colums from 
+starting is showing continuous values. 
+
+
+## Skiming the data
+
+### Developers Code as hobby or not
+
+```{r, message=FALSE, warning=FALSE}
+
+Survey_results%>%
+count(Hobby)%>%
+  hchart("column", hcaes(x = Hobby, y = n/Total_rec*100))
+
+```
+
+
+
+### Country Wise Distribution of developers
+
+```{r message=FALSE, warning=FALSE}
+
+Survey_results$Country%>%
+  skim()
+
+Survey_results%>%
+  group_by(Country)%>%
+  summarise(n = n())%>%
+  hchart("treemap", hcaes(x = Country, value = n, color = n))
+
+```
+
+### Country Wise Salary
+
+```{r, message=FALSE, warning=FALSE}
+
+df = Survey_results%>%
+  filter(!is.na(Country))%>%
+  filter(!is.na(ConvertedSalary))%>%
+  group_by(Country)%>%
+  summarise( min = min(ConvertedSalary), max = max(ConvertedSalary))%>%
+  arrange(desc(max))%>%
+  filter(min != 0)%>%
+  filter(max != 0)
+
+  highchart()%>%
+  hc_xAxis(categories = df$Country)%>%
+    hc_add_series(name = "Max Slary", data = df$max)%>%
+    hc_add_series(name = "Minimum salary", data = df$min)%>%
+  hc_chart(type = "column",
+           options3d = list(enabled = TRUE, beta = 15, alpha = 15))
+
+
+
+```
+
+
+
+### Developer Student Or Not
+
+```{r message=FALSE, warning=FALSE}
+
+Survey_results$Student%>%
+  skim()
+
+Survey_results%>%
+  count(Student)%>%
+  hchart( "column", hcaes(x = Student, y = n))
+
+```
+
+### Employment Wise Distribution
+
+```{r message=FALSE, warning=FALSE}
+
+Survey_results$Employment%>%
+  skim()
+
+Survey_results%>%
+  count(Employment)%>%
+  hchart( "column", hcaes(x = Employment, y = n))
+
+```
+
+
+### Most Used Language
+
+#### Wordcloud
+```{r message=FALSE, warning=FALSE}
+word_freq_lang = Survey_results%>%
+  filter(!is.na(LanguageWorkedWith))%>%
+  select(LanguageWorkedWith)%>%
+  mutate(LanguageWorkedWith = str_split(LanguageWorkedWith, pattern = ";"))%>%
+  unnest(LanguageWorkedWith)%>%
+  group_by(LanguageWorkedWith)%>%
+  summarise(Count = n())%>%
+  arrange(desc(Count))%>%
+  ungroup()%>%
+  mutate(LanguageWorkedWith = reorder(LanguageWorkedWith, Count))
+
+
+wordcloud(word_freq_lang$LanguageWorkedWith, word_freq_lang$Count, colors = 'blue')
+
+```
+
+#### Bar Chart
+
+
+```{r message=FALSE, warning=FALSE}
+
+highchart()%>%
+  hc_title(text = paste("Bar Chart"))%>%
+  hc_xAxis(categories = word_freq_lang$LanguageWorkedWith)%>%
+  hc_add_series(data = word_freq_lang$Count, name = "Count", type = "bar")
+
+```
+
+### Most used Database
+
+#### Wordcloud
+
+```{r message=FALSE, warning=FALSE}
+
+word_freq_database = Survey_results%>%
+  filter(!is.na(DatabaseWorkedWith))%>%
+  select(DatabaseWorkedWith)%>%
+  mutate(DatabaseWorkedWith = str_split(DatabaseWorkedWith, pattern = ";"))%>%
+  unnest(DatabaseWorkedWith)%>%
+  group_by(DatabaseWorkedWith)%>%
+  summarise(Count = n())%>%
+  arrange(desc(Count))%>%
+  ungroup()%>%
+  mutate(DatabaseWorkedWith = reorder(DatabaseWorkedWith, Count))
+
+
+wordcloud(word_freq_database$DatabaseWorkedWith, word_freq_database$Count, colors = 'blue')
+
+
+
+```
+#### Bar Chart
+
+
+```{r message=FALSE, warning=FALSE}
+
+highchart()%>%
+  hc_title(text = paste("Bar Chart"))%>%
+  hc_xAxis(categories = word_freq_database$DatabaseWorkedWith)%>%
+  hc_add_series(data = word_freq_database$Count, name = "Count", type = "bar")
+
+```
+
+
+### Langauge Desired Next Year
+
+```{r, message=FALSE, warning=FALSE}
+
+word_freq_Lan_next = Survey_results%>%
+  filter(!is.na(LanguageDesireNextYear))%>%
+  select(LanguageDesireNextYear)%>%
+  mutate(LanguageDesireNextYear = str_split(LanguageDesireNextYear, pattern = ";"))%>%
+  unnest(LanguageDesireNextYear)%>%
+  group_by(LanguageDesireNextYear)%>%
+  summarise(Count = n())%>%
+  arrange(desc(Count))%>%
+  ungroup()%>%
+  mutate(DatabaseWorkedWith = reorder(LanguageDesireNextYear, Count))
+
+
+highchart()%>%
+  hc_title(text = paste("Bar Chart"))%>%
+  hc_xAxis(categories = word_freq_Lan_next$LanguageDesireNextYear)%>%
+  hc_add_series(data = word_freq_Lan_next$Count, name = "Count", type = "bar")
+
+```
+
+
+#### Pyramid plot of Language worked with and Language worked with next year
+```{r, message=FALSE, warning=FALSE}
+
+library(plotrix)
+
+mcol<-color.gradient(c(0,0,0.5,1),c(0,0,0.5,1),c(1,1,0.5,1),18)
+fcol<-color.gradient(c(1,1,0.5,1),c(0.5,0.5,0.5,1),c(0.5,0.5,0.5,1),18)
+
+
+t1 = sum(word_freq_lang$Count)
+t2 = sum(word_freq_Lan_next$Count)
+
+word_freq_lang$Count = word_freq_lang$Count/t1 *100
+word_freq_Lan_next$Count = word_freq_Lan_next$Count/t2*100
+
+par(mar = pyramid.plot(word_freq_lang$Count, word_freq_Lan_next$Count, labels = word_freq_lang$LanguageWorkedWith, top.labels=c("Langauage Worked With","","Language Desired Next Year"), main = "Language Worked with and will desire to work next", gap=5, show.values = F, rxcol = fcol, lxcol = mcol))
+```
+
+
+
+
+### DataBase Desired Next Year
+
+```{r, message=FALSE, warning=FALSE}
+
+
+word_freq_Database_next = Survey_results%>%
+  filter(!is.na(DatabaseDesireNextYear))%>%
+  select(DatabaseDesireNextYear)%>%
+  mutate(DatabaseDesireNextYear = str_split(DatabaseDesireNextYear, pattern = ";"))%>%
+  unnest(DatabaseDesireNextYear)%>%
+  group_by(DatabaseDesireNextYear)%>%
+  summarise(Count = n())%>%
+  arrange(desc(Count))%>%
+  ungroup()%>%
+  mutate(DatabaseDesireNextYear = reorder(DatabaseDesireNextYear, Count))
+
+
+highchart()%>%
+  hc_title(text = paste("Bar Chart"))%>%
+  hc_xAxis(categories = word_freq_Database_next$DatabaseDesireNextYear)%>%
+  hc_add_series(data = word_freq_Database_next$Count, name = "Count", type = "bar")
+
+
+```
+
+
+#### Pyramid plot of Database worked with and Database worked with next year
+
+```{r, message=FALSE, warning=FALSE}
+
+library(plotrix)
+
+mcol<-color.gradient(c(0,0,0.5,1),c(0,0,0.5,1),c(1,1,0.5,1),18)
+fcol<-color.gradient(c(1,1,0.5,1),c(0.5,0.5,0.5,1),c(0.5,0.5,0.5,1),18)
+
+t1 = sum(word_freq_database$Count)
+t2 = sum(word_freq_Database_next$Count)
+
+word_freq_database$Count = word_freq_database$Count/t1 *100
+word_freq_Database_next$Count = word_freq_Database_next$Count/t2*100
+
+par(mar = pyramid.plot(word_freq_database$Count, word_freq_Database_next$Count, labels = word_freq_database$DatabaseWorkedWith, top.labels=c("Database Worked","","Database Desired Next Year"), main = "Database Worked with and will desire to work next", gap=5, show.values = F, rxcol = fcol, lxcol = mcol))
+
+
+```
+
+
+### AI Interesting, Dangerous and Future Comments
+
+```{r, message=FALSE, warning=FALSE}
+
+
+Survey_results%>%
+  count(AIInteresting)%>%
+  hchart( "column", hcaes(x = AIInteresting, y = n))
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+
+
+Survey_results%>%
+  count(AIDangerous)%>%
+  hchart( "column", hcaes(x = AIDangerous, y = n))
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+
+
+Survey_results%>%
+  count(AIFuture)%>%
+  hchart( "column", hcaes(x = AIFuture, y = n))
+
+```
+
+
+
